@@ -128,7 +128,7 @@ The test suite uses the template mock-model system, so MongoDB is not required f
 
 ## Deployment
 
-The project includes `render.yaml` for Render deployment.
+The project includes `render.yaml` for Render deployment. The build command installs development dependencies because the template's `prepare` script uses Husky during installation.
 
 Runtime configuration:
 
