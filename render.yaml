@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: nodejs-assessment
+    env: node
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: APP_NAME
+        value: nodejs-assessment
+      - key: QUEUE_NAME
+        value: nodejs-assessment
+      - key: PINO_LOG_LEVEL
+        value: info
+      - key: MONGODB_URI
+        sync: false
