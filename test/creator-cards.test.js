@@ -40,6 +40,8 @@ describe('Creator Cards', () => {
 
     assert.strictEqual(typeof card.id, 'string');
     assert.strictEqual(card._id, undefined);
+    assert.strictEqual(card.links[0]._id, undefined);
+    assert.strictEqual(card.service_rates.rates[0]._id, undefined);
     assert.strictEqual(card.slug, 'george-cooks');
     assert.strictEqual(card.access_type, 'public');
     assert.strictEqual(card.access_code, null);
