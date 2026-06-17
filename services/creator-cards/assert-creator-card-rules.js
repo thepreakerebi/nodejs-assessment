@@ -38,6 +38,14 @@ function assertCreatorCardRules(data) {
     });
   }
 
+  if (data.links) {
+    data.links.forEach((link) => {
+      if (!link.url.startsWith('http://') && !link.url.startsWith('https://')) {
+        throwAppError('links[].url must start with http:// or https://', ERROR_CODE.INVLDDATA);
+      }
+    });
+  }
+
   response = true;
 
   return response;
