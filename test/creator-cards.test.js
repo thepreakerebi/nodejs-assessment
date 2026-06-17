@@ -119,6 +119,25 @@ describe('Creator Cards', () => {
     );
   });
 
+  it('requires service rate descriptions', async () => {
+    await assert.rejects(
+      () =>
+        createCard({
+          title: 'Rate Card',
+          creator_reference: 'crt_q1w2e3r4t5y6u7i8',
+          status: 'published',
+          service_rates: {
+            currency: 'USD',
+            rates: [{ name: 'API Review', amount: 10000 }],
+          },
+        }),
+      (error) => {
+        assert.strictEqual(error.isApplicationError, true);
+        return true;
+      }
+    );
+  });
+
   it('retrieves published public cards without leaking access_code', async () => {
     const findStub = configureCreatorCardStub({
       method: 'findOne',

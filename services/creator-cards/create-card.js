@@ -19,7 +19,7 @@ const createCardSpec = `root {
     currency string<trim|uppercase|isAnyOf:NGN,USD,GBP,GHS>
     rates[] {
       name string<trim|minLength:3|maxLength:100>
-      description? string<trim|maxLength:250>
+      description string<trim|maxLength:250>
       amount number<min:1>
     }
   }
@@ -30,13 +30,26 @@ const createCardSpec = `root {
 
 const parsedCreateCardSpec = validator.parse(createCardSpec);
 
+async function findAnyCardBySlug(slug) {
+  const query = CreatorCard.raw().findOne({ slug });
+  let result;
+
+  if (query && typeof query.lean === 'function') {
+    result = await query.lean();
+  } else {
+    result = await query;
+  }
+
+  return result;
+}
+
 async function resolveSlug(data) {
   let slug;
   let existingGeneratedSlug;
   let attempts = 0;
 
   if (data.slug) {
-    const existingCard = await CreatorCard.findOne({ query: { slug: data.slug } });
+    const existingCard = await findAnyCardBySlug(data.slug);
 
     if (existingCard) {
       throwAppError(CreatorCardMessages.SLUG_ALREADY_TAKEN, ERROR_CODE.SL02);
@@ -46,11 +59,11 @@ async function resolveSlug(data) {
   } else {
     slug = buildSlug(data.title);
 
-    existingGeneratedSlug = await CreatorCard.findOne({ query: { slug } });
+    existingGeneratedSlug = await findAnyCardBySlug(slug);
 
     while (existingGeneratedSlug && attempts < 5) {
       slug = buildSlug(data.title, { forceSuffix: true });
-      existingGeneratedSlug = await CreatorCard.findOne({ query: { slug } });
+      existingGeneratedSlug = await findAnyCardBySlug(slug);
       attempts += 1;
     }
 

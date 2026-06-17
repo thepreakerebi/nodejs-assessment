@@ -11,7 +11,7 @@ root {
     currency string<trim|uppercase|isAnyOf:NGN,USD,GBP,GHS>
     rates[] {
       name string<trim|minLength:3|maxLength:100>
-      description? string<trim|maxLength:250>
+      description string<trim|maxLength:250>
       amount number<min:1>
     }
   }
