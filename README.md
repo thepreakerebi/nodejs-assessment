@@ -1,57 +1,136 @@
 # Creator Card API
 
-Node.js/Express Creator Card microservice built on the required R17 backend template.
+A Node.js and Express microservice for creating, retrieving, and deleting Creator Cards. The project is built on the R17 backend template and uses MongoDB for persistence.
 
-## Endpoints
+Creator Cards are shareable profile cards for creators, including profile metadata, showcase links, service rates, publication status, and optional private access controls.
 
-- `POST /creator-cards` creates a card.
-- `GET /creator-cards/:slug` retrieves a published public card, or a private card with `?access_code=`.
-- `DELETE /creator-cards/:slug` soft-deletes a card.
+## Features
 
-All endpoints live at the root of the base URL. There is no `/api`, `/v1`, authentication, bearer token, or API key requirement.
+- Create published or draft Creator Cards.
+- Retrieve published public cards by slug.
+- Retrieve private cards with a valid `access_code`.
+- Soft-delete cards by slug.
+- Auto-generate slugs from card titles.
+- Persist cards in MongoDB through the template repository layer.
+- Serialize MongoDB `_id` as `id` in API responses.
+- Omit `access_code` from public retrieval responses.
 
-## Requirements Covered
+## Tech Stack
 
-- MongoDB persistence through the template model/repository pattern.
-- VSL validation for field-level request validation.
-- Custom business errors: `SL02`, `AC01`, `AC05`, `NF01`, `NF02`, `AC03`, `AC04`.
-- API responses serialize Mongo `_id` as `id` and never expose `_id`.
-- Retrieval responses omit `access_code`.
-- Draft and deleted cards are not publicly retrievable.
-- Slugs auto-generate from title when omitted.
+- Node.js
+- Express.js
+- MongoDB / Mongoose
+- R17 backend template
+- Mocha test runner
 
-## Local Setup
+## API Reference
+
+### Create Creator Card
+
+```http
+POST /creator-cards
+```
+
+Creates a Creator Card after field-level validation and business-rule checks.
+
+```json
+{
+  "title": "George Cooks",
+  "description": "Weekly cooking podcast",
+  "slug": "george-cooks",
+  "creator_reference": "crt_8f2k1m9x4p7w3q5z",
+  "links": [
+    { "title": "YouTube", "url": "https://youtube.com/@georgecooks" }
+  ],
+  "service_rates": {
+    "currency": "NGN",
+    "rates": [
+      {
+        "name": "IG Story Post",
+        "description": "One story mention",
+        "amount": 5000000
+      }
+    ]
+  },
+  "status": "published",
+  "access_type": "public"
+}
+```
+
+### Retrieve Creator Card
+
+```http
+GET /creator-cards/:slug
+```
+
+Retrieves a published card by slug. Private cards require an access code query parameter.
+
+```http
+GET /creator-cards/vip-rate-card?access_code=A1B2C3
+```
+
+### Delete Creator Card
+
+```http
+DELETE /creator-cards/:slug
+```
+
+Soft-deletes a card and returns the deleted card payload.
+
+```json
+{
+  "creator_reference": "crt_8f2k1m9x4p7w3q5z"
+}
+```
+
+## Error Codes
+
+Custom business-rule errors use the following codes:
+
+| Code | HTTP Status | Meaning |
+| ---- | ----------- | ------- |
+| `SL02` | 400 | Slug is already taken |
+| `AC01` | 400 | Private cards require `access_code` |
+| `AC05` | 400 | Public cards cannot include `access_code` |
+| `NF01` | 404 | Creator Card not found |
+| `NF02` | 404 | Creator Card exists but is a draft |
+| `AC03` | 403 | Private card access code is required |
+| `AC04` | 403 | Private card access code is invalid |
+
+## Setup
 
 ```bash
 npm install
 cp .env.example .env
-npm test
 ```
 
-For local server execution, set at least:
+Required environment variables:
 
 ```bash
-PORT=3000
 APP_NAME=nodejs-assessment
 MONGODB_URI=mongodb://localhost:27017/nodejs-assessment
 QUEUE_NAME=nodejs-assessment
 ```
 
-Then start the server:
+Start the API:
 
 ```bash
 npm start
 ```
 
-## Render Deployment
+## Testing
 
-Use a Node Web Service with:
+```bash
+npm test
+```
 
-- Build command: `npm install`
-- Start command: `npm start`
-- Node version: `>=20 <26`
+The test suite uses the template mock-model system, so MongoDB is not required for tests.
 
-Set environment variables:
+## Deployment
+
+The project includes `render.yaml` for Render deployment.
+
+Runtime configuration:
 
 ```bash
 APP_NAME=nodejs-assessment
@@ -60,14 +139,4 @@ QUEUE_NAME=nodejs-assessment
 PINO_LOG_LEVEL=info
 ```
 
-Submit only the deployed base URL, for example `https://nodejs-assessment.onrender.com`.
-
-## Test Notes
-
-The service tests use the template mock-model system and do not require MongoDB:
-
-```bash
-npm test
-```
-
-If your local machine is on Node v26, use Node 20-24 because the template's current Mocha dependency chain is not compatible with Node v26.
+The service expects Node.js `>=20 <26`.
